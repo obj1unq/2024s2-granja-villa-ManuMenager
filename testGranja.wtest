@@ -1,9 +1,52 @@
-import example.pepita
+import wollok.game.*
+import hector.*
+import cultivos.*
+import aspersores.*
+import mercados.*
 
-describe "group of tests for pepita" {
-
-  test "pepita has initial energy" {
-    assert.equals(100, pepita.energy())
+describe "hector" {
+  test "sembrar" {
+    const trigo = new Trigo()
+    assert.equals(#{}, granja.sembrados(hector.position()))
+    hector.sembrar(trigo)
+    assert.equals(#{trigo}, granja.sembrados(hector.position()))
+    assert.throwsException({hector.sembrar(new Tomaco())}) // No se pueden sembrar dos cultivos en la misma parcela
   }
 
+  test "regar" {
+    const maiz = new Maiz()
+    hector.sembrar(maiz)
+    assert.equals("corn_baby.png", maiz.image())
+    hector.regar()
+    assert.equals("corn_adult.png", maiz.image())
+  }
+
+  test "cosechar" {
+    const tomaco = new Tomaco()
+    hector.sembrar(tomaco)
+    assert.equals(#{}, hector.cosechados())
+    hector.cosechar()
+    assert.equals(#{tomaco}, hector.cosechados())
+  }
+
+  test "aspersores" {
+    hector.agregarAspersor()
+    assert.notThat(aspersores.todos().isEmpty())
+    hector.position(game.at(hector.position().x() + 1, hector.position().y()))
+    const tomaco = new Tomaco()
+    hector.sembrar(tomaco)
+    assert.throwsException({hector.agregarAspersor()})
+    hector.cosechar()
+  }
+
+  test "mercados" {
+    const tomaco = new Tomaco()
+    hector.sembrar(tomaco)
+    hector.cosechar()
+    assert.throwsException({hector.vender()})
+    mercados.agregar(game.at(2,2), 5000)
+    hector.position(game.at(2,2))
+    hector.vender()
+    assert.equals(80,hector.oro())
+  }
 }
